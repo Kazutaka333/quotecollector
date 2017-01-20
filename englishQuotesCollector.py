@@ -8,20 +8,6 @@ def getPyQueryFromURL(url):
 	opener.addheaders = [('User-agent', 'mozilla 3.6')] #fake agent
 	return PyQuery(opener.open(url).read())
 
-dic = { "results" :[]}
-
-originalUrl = 'http://www.brainyquote.com/quotes/topics/topic_success.html'
-q = getPyQueryFromURL(originalUrl)
-
-# find the last page
-pagingUl = q.find(".pagination, .bqNPgn, .pagination-sm")
-pagingUlQ = PyQuery(pagingUl)
-aTags = pagingUlQ.find('a')
-aTags.pop()
-lastPage = int(PyQuery(aTags.pop()).text())
-
-print "There are " + str(lastPage) + " pages"
-
 def printProgressBar(current,maximum):
 	percentage = int(float(current)/float(maximum)*100.0)
 	blockNum = percentage/2
@@ -33,24 +19,29 @@ def printProgressBar(current,maximum):
 	blockStr += "]"
 	sys.stdout.write("\r%d%% %s " % (percentage, blockStr))
 	sys.stdout.flush()
+	if current >= maximum:
+		print
 
 
-#for i in range(1,lastPage+1):
-for i in range(1,5):
+dic = { "results" :[]}
 
-	# progress bar
-	percentage = int(float(i)/float(lastPage)*100.0)
-	blockNum = percentage/2
-	blockStr = '['
-	for i in range(0,blockNum):
-		blockStr += "■"
-	for i in range(0,50-blockNum):
-		blockStr += " "
-	blockStr += "]"
-	sys.stdout.write("\r%d%% %s " % (percentage, blockStr))
-	sys.stdout.flush()
-	
+originalUrl = 'http://www.brainyquote.com/quotes/topics/topic_success.html'
+q = getPyQueryFromURL(originalUrl)
 
+# find the last page number
+pagingUl = q.find(".pagination, .bqNPgn, .pagination-sm")
+pagingUlQ = PyQuery(pagingUl)
+aTags = pagingUlQ.find('a')
+aTags.pop()
+lastPage = int(PyQuery(aTags.pop()).text())
+
+print "There are " + str(lastPage) + " pages"
+
+for i in range(1,lastPage+1):
+
+	printProgressBar(i,lastPage)
+
+	# generate URL
 	if i == 1:
 		page = ''
 	else:
@@ -58,6 +49,7 @@ for i in range(1,5):
 	url = originalUrl[0:len(originalUrl)-5]+page+'.html'
 	q = getPyQueryFromURL(url)
 
+	# filter out quote and info
 	for quoteDiv in q.find('.masonryitem, .boxy, .bqQt, .bqShare, .masonry-brick'): 
 		tempDict = {}
 		quoteDivQ = PyQuery(quoteDiv)
@@ -75,6 +67,7 @@ for i in range(1,5):
 		tempDict['category'] = 'Success'
 		dic["results"].append(tempDict)
 
+# convert into json and write
 text = json.dumps(dic, sort_keys=True, ensure_ascii=False, indent=4)
 with open('englishQuotes.json', 'w') as f:
     f.write(text.encode("utf-8"))
