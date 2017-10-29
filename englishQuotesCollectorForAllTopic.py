@@ -2,6 +2,9 @@
 import sys, json, time, urllib2
 from pyquery import PyQuery
 
+# TODO remove this
+import pprint as pp
+
 
 def getPyQueryFromUrl(url):
     opener = urllib2.build_opener()
@@ -37,14 +40,17 @@ def numberPageUrl(url):
 
 dic = { "results" :[]}
 
+BRAINYQUOTE_URL = "https://www.brainyquote.com"
 TOPIC_URL = "https://www.brainyquote.com/quotes/topics.html"
 ORIGINAL_URL = 'http://www.brainyquote.com/quotes/topics/topic_success.html'
 OUTPUT_FILENAME = 'englishQuotes.json'
 
 # find how many topics exist
 q = getPyQueryFromUrl(TOPIC_URL)
-topicRowDivs = q.find(".topicContentName")
-print len(topicRowDivs)
+topicATags = q.find(".topicIndexChicklet")
+for topicATag in topicATags.items():
+    pp.pprint(topicATag.attr['href'])
+    break
 '''
 # iterate through topics
 
